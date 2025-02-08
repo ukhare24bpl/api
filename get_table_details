@@ -1,0 +1,27 @@
+import boto3
+
+def get_table_details(database_name, table_name):
+    glue_client = boto3.client('glue')
+
+    try:
+        response = glue_client.get_table(DatabaseName=database_name, Name=table_name)
+        return response.get('Table', {})  # Return full table metadata
+    except glue_client.exceptions.EntityNotFoundException:
+        print(f"Table '{table_name}' not found in database '{database_name}'.")
+        return {}
+    except glue_client.exceptions.AccessDeniedException:
+        print("Access Denied! Check IAM permissions.")
+        return {}
+    except Exception as e:
+        print(f"Unexpected error fetching details for table {table_name}: {e}")
+        return {}
+
+# Example Usage
+databases = ["your-database-name"]  # Ensure this is fetched dynamically
+tables = ["your-table-name"]  # Ensure this is fetched dynamically
+
+if databases and tables:
+    table_details = get_table_details(databases[0], tables[0])  # Get first table's details
+    print(f"Details of table {tables[0]}:", table_details)
+else:
+    print("No databases or tables found.")
